@@ -10,6 +10,9 @@ import System.Process
 _ZK_DIR_NAME :: FilePath
 _ZK_DIR_NAME = ".zk"
 
+_NEURON_EXE :: FilePath
+_NEURON_EXE = "neuron"
+
 main :: IO ()
 main = do
   args <- getArgs
@@ -29,12 +32,14 @@ main = do
     case zkDir of
       Nothing -> die ("Could not find directory " <> _ZK_DIR_NAME)
       Just d -> do
-        let prog = unwords ["neuron", "-d", d]
+        let prog = unwords [_NEURON_EXE, "-d", d]
         case head args of
           "link" -> do
             when (length args /= 2) (error "Please provide a file to link")
             let linkFile = args !! 1
-            neuronFile <- readProcess prog ["new", "DUMMY"] []
+            neuronFile <-
+              head . lines
+                <$> readProcess _NEURON_EXE ["-d", d, "new", "DUMMY"] []
             createFileLink linkFile neuronFile
             exitSuccess
           "dir" -> do
